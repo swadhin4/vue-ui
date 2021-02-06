@@ -1,55 +1,80 @@
 <template>
-  <v-simple-table>
-    <template v-slot:default>
-      <thead>
-        <tr>
-          <th class="text-left">
-            Name
-          </th>
-          <th class="text-left">
-            SSO
-          </th>
-           <th class="text-left">
-            Amount
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="item in details"
-          :key="item.name"
-        >
-          <td>{{ item.name }}</td>
-          <td>{{ item.sso }}</td>
-          <td>{{ item.amount }}</td>
-        </tr>
-      </tbody>
-    </template>
-  </v-simple-table>
+  <div class="">
+    <v-data-table
+      :page="page"
+      :pageCount="noOfPages"
+      :headers="headers"
+      :items="users"
+      :options.sync="options"
+      :server-items-length="totalUsers"
+      :loading="loading"
+      loading-text="Loading... Please wait"
+      class="elevation-1"
+    >
+      <template v-slot:item.logo="{ item }">
+        <img :src="item.logo" style="width: 20%;" />
+      </template>
+    </v-data-table>
+  </div>
 
 </template>
+<style>
+    .text-start{
+      width: 30%;
+    }
+</style>  
 <script>
-  export default {
-    data () {
-      return {
-        details: [
-          {
-            name: 'Frozen Yogurt',
-            sso: 159,
-            amount:12.34
-          },
-          {
-            name: 'Ice cream sandwich',
-            sso: 237,
-            amount:12.34
-          },
-          {
-            name: 'Eclair',
-            sso: 262,
-            amount:12.34
-          }
-        ],
-      }
+import axios from "axios";
+export default {
+  name: "Details",
+  data() {
+    return {
+      page: 1,
+      totalUsers: 0,
+      noOfPages: 0,
+      users: [],
+      loading: true,
+      options: {},
+      headers: [
+        { text: "Logo", value: "logo" },
+        { text: "Name", value: "name" },
+        { text: "SSO", value: "sso" },
+        { text: "Amount", value: "amount" }
+      ],
+    };
+  },
+  watch: {
+    options: {
+      handler() {
+        this.readDataFromAPI();
+      },
     },
-  }
+    deep: true,
+  },
+  methods: {
+    readDataFromAPI() {
+      this.loading = true;
+      const { page, itemsPerPage } = this.options;
+      console.log("Page Number ", page, itemsPerPage);
+      let pageNumber = page - 1;
+      axios
+        .get(
+          "http://localhost:3000/users?size=" +
+            itemsPerPage +
+            "&page=" +
+            pageNumber
+        )
+        .then((response) => {
+          this.loading = false;
+          this.users = response.data;
+          this.totalUsers = response.data.length;
+          this.noOfPages = response.data.noOfPages;
+          console.log(response)
+        });
+    },
+  },
+  mounted() {
+    this.readDataFromAPI();
+  },
+};
 </script>
