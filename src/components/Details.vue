@@ -10,6 +10,7 @@
       :loading="loading"
       loading-text="Loading... Please wait"
       class="elevation-1"
+      @click:row="handleClick"
     >
       <template v-slot:item.logo="{ item }">
         <img :src="item.logo" style="width: 20%;" />
@@ -72,6 +73,12 @@ export default {
           console.log(response)
         });
     },
+    handleClick(value) {
+      this.viewDetails(value);
+    },
+    viewDetails(v){
+      console.log(v);
+    }
   },
   mounted() {
     this.readDataFromAPI();
